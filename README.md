@@ -1,9 +1,9 @@
 # atai-p4
 
-Allied=1 | Titre colonne 1 | Titre colonne 1 | Titre colonne 1 | Titre colonne 1 | Titre colonne 1 
+Axis=o; Allied=1 -> | Default | Lucky | DEA | PI | Rocosos 
  --- | --- | --- | --- | --- | --- 
-Celule 1.1 | Celule 1.2 | Celule 1.3 | Celule 1.2 | Celule 1.3 | Celule 1.2 
-Celule 1.1 | Celule 1.2 | Celule 1.3 | Celule 1.2 | Celule 1.3 | Celule 1.2 
-Celule 1.1 | Celule 1.2 | Celule 1.3 | Celule 1.2 | Celule 1.3 | Celule 1.2 
-Celule 1.1 | Celule 1.2 | Celule 1.3 | Celule 1.2 | Celule 1.3 | Celule 1.2 
-Celule 1.1 | Celule 1.2 | Celule 1.3 | Celule 1.2 | Celule 1.3 | Celule 1.2 
+Default | Celule 1.2 | Celule 1.3 | Celule 1.2 | Celule 1.3 | Celule 1.2 
+Lucky | Celule 1.2 | Celule 1.3 | Celule 1.2 | Celule 1.3 | Celule 1.2 
+DEA | Celule 1.2 | Celule 1.3 | Celule 1.2 | Celule 1.3 | Celule 1.2 
+PI | Celule 1.2 | Celule 1.3 | Celule 1.2 | Celule 1.3 | Celule 1.2 
+Rocosos | Celule 1.2 | Celule 1.3 | Celule 1.2 | Celule 1.3 | Celule 1.2 
