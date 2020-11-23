@@ -62,6 +62,17 @@ patrollingRadius(64).
                 .nth(2, Object, Type);
                 
                 ?debug(Mode); if (Mode<=2) { .println("Objeto Analizado: ", Object); }
+
+                // Tracking the flag
+                if (Type == 1003){
+                    +flag_at_sight;
+                    .nth(6, Object, FlagPos);
+                    pos(FlagX, FlagY, FlagZ) = FlagPos;
+                    if (not flag_located){
+                        +flag_located;
+                        +flag(FlagX, FlagY, FlagZ);
+                    }
+                }
                 
                 if (Type > 1000) {
                     ?debug(Mode); if (Mode<=2) { .println("I found some object."); }
@@ -71,7 +82,7 @@ patrollingRadius(64).
                     ?my_formattedTeam(MyTeam);
           
                     if (Team == 100) {  // Only if I'm AXIS
-				
+
  					    ?debug(Mode); if (Mode<=2) { .println("Aiming an enemy. . .", MyTeam, " ", .number(MyTeam) , " ", Team, " ", .number(Team)); }
 					    +aimed_agent(Object);
                         -+aimed("true");
@@ -83,11 +94,56 @@ patrollingRadius(64).
                 -+bucle(X+1);
                 
             }
-                     
+
+            -flag_dissapeared;
+
+            if (flag_previously_at_sight & not flag_at_sight){
+                .println("I lost sight of the flag");
+                +flag_dissapeared;
+            }
+
+            -flag_previously_at_sight;
+
+            if (flag_at_sight){
+                +flag_previously_at_sight;
+                -flag_at_sight;
+            }
+                    
          
         }
 
-     -bucle(_).
+     -bucle(_);
+    
+    //We look for enemies in the position where the flag was
+    if (flag_dissapeared){
+        //If there are objects in sight we iterate through them
+        if (Length > 0) {
+		    +bucle(0);
+            while (bucle(X) & (X < Length)) {
+                //Check if the object is an enemy
+                .nth(X, FOVObjects, Object);
+                .nth(2, Object, Type);
+                if (Type < 1000){
+                    .nth(1, Object, Team);
+                    if (Team == 100){
+                        //Check if the enenemie is the position where the flag was
+                        .nth(6, Object, EnemiePos);
+                        pos(EposX, EposY, EposZ) = EnemiePos;
+                        ?flag(FlagX, FlagY, FlagZ);
+                        if (math.abs(EposX - FlagX)<3 & math.abs(EposY - FlagY)<3 & math.abs(EposZ - FlagZ)<3){
+                            .println("AAAAAAAAAAAAA THE FLAGGGG WAS TAKEEEEEEN");
+                            .println("By someone at: ", EposX, ", ", EposY, ", ", EposZ);
+                            -flag_located;
+                            -flag(_);
+                        }
+                    }
+                }
+                -+bucle(X+1);
+            }
+            -bucle(_);
+        }
+    }
+    .
 
         
 
@@ -313,5 +369,7 @@ patrollingRadius(64).
 /////////////////////////////////
 
 +!init
-   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE.")}.  
-
+   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE.")}
+        
+    
+    .
