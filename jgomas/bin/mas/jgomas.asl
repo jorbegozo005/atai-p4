@@ -154,6 +154,36 @@ current_task(nil).
 * Finite State Machine definition
 *
 *******************************/
+/*
++!fsm : state(shooting)
+	<-	
+
+			if ((aimed(Ag)) & (Ag=="true")) {
+				// Save current destination.
+				?current_destination(OldDestination);
+
+				!perform_aim_action;
+
+				println("VOY A DISPARAR!!!"); 
+				// Shot.
+				!!shot(0);
+
+				// Continue to previous destination.
+
+				update_destination(OldDestination);
+
+				-+last_time_move(CurrentTime);
+
+				// ya no tengo objetivo
+				-+aimed("false");
+
+			};
+			!get_agent_to_aim;
+			-+state(go_to_target);
+		//.println("aaaaaaaaaaaaaaaaaaaaaaaaa");
+		!!fsm;
+		.fail.
+*/
 +!fsm : state(standing)
 	<- 	//operate
 

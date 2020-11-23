@@ -69,12 +69,26 @@ if (Length > 0) {
             .nth(1, Object, Team);
             ?my_formattedTeam(MyTeam);
             
-            if (Team == 200) {  // Only if I'm ALLIED
-				
+            if (Team == 200)  {  // Only if I'm ALLIED
+                if (Type == 2){
+                    +aimed_agent(Object);
+                    -+aimed("true");
+                    .println("Apuntamos al medico");
+                }else{
+                    if (Type == 4){
+                    +aimed_agent(Object);
+                    -+aimed("true");
+                    .println("Apuntamos al jefe");
+                    }else{
+                        +aimed_agent(Object);
+                        -+aimed("true");
+                        .println("Apuntamos al soldado");
+                        
+                    }
+                }
                 ?debug(Mode); if (Mode<=2) { .println("Aiming an enemy. . .", MyTeam, " ", .number(MyTeam) , " ", Team, " ", .number(Team)); }
-                +aimed_agent(Object);
-                -+aimed("true");
-                
+                -+target(Object);
+                -+state(go_to_target)
             }
             
         }
@@ -84,6 +98,9 @@ if (Length > 0) {
     }
     
    
+}
+if(aimed("false")){
+    -+state(go_to_target);
 }
 
 -bucle(_).
@@ -179,8 +196,7 @@ if (Length > 0) {
         +task_priority("TASK_GIVE_AMMOPAKS", 0);
         +task_priority("TASK_GIVE_BACKUP", 0);
         +task_priority("TASK_GET_OBJECTIVE",1000);
-        +task_priority("TASK_ATTACK", 1000);
-        +task_priority("TASK_RUN_AWAY", 1500);
+        +task_priority("TASK_ATTACK", 1900);
         +task_priority("TASK_GOTO_POSITION", 750);
         +task_priority("TASK_PATROLLING", 500);
         +task_priority("TASK_WALKING_PATH", 1750).   
