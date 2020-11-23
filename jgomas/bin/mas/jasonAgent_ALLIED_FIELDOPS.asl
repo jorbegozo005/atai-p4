@@ -71,11 +71,24 @@ if (Length > 0) {
             .nth(1, Object, Team);
             ?my_formattedTeam(MyTeam);
             
-            if (Team == 200) {  // Only if I'm ALLIED
-				
+            if (Team == 200)  {  // Only if I'm ALLIED
+                if (Type == 1){
+                    +aimed_agent(Object);
+                    -+aimed("true");
+                    .println("Apuntamos al loco");
+                }else{
+                    if (Type == 2){
+                    +aimed_agent(Object);
+                    -+aimed("true");
+                    .println("Apuntamos al medico");
+                    }else{
+                        +aimed_agent(Object);
+                        -+aimed("true");
+                        .println("Apuntamos al jefe");
+                    }
+                }
                 ?debug(Mode); if (Mode<=2) { .println("Aiming an enemy. . .", MyTeam, " ", .number(MyTeam) , " ", Team, " ", .number(Team)); }
-                +aimed_agent(Object);
-                -+aimed("true");
+                -+target(Object);
                 
             }
             
