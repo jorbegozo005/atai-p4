@@ -6,11 +6,12 @@ manager("Manager").
 // Team of troop.
 team("ALLIED").
 // Type of troop.
-type("CLASS_MEDIC").
+type("CLASS_SOLDIER").
 
 
+//state(pos1).
 
-
+a(1).
 { include("jgomas.asl") }
 
 
@@ -29,16 +30,184 @@ type("CLASS_MEDIC").
 //  GET AGENT TO AIM 
 /////////////////////////////////  
 /**
- * Calculates if there is an enemy at sight.
- *
- * This plan scans the list <tt> m_FOVObjects</tt> (objects in the Field
- * Of View of the agent) looking for an enemy. If an enemy agent is found, a
- * value of aimed("true") is returned. Note that there is no criterion (proximity, etc.) for the
- * enemy found. Otherwise, the return value is aimed("false")
- *
- * <em> It's very useful to overload this plan. </em>
- * 
- */
+* Calculates if there is an enemy at sight.
+* 
+* This plan scans the list <tt> m_FOVObjects</tt> (objects in the Field
+* Of View of the agent) looking for an enemy. If an enemy agent is found, a
+* value of aimed("true") is returned. Note that there is no criterion (proximity, etc.) for the
+* enemy found. Otherwise, the return value is aimed("false")
+* 
+* <em> It's very useful to overload this plan. </em>
+* 
+*/  
+
+
+
+
++!fsm : state(standing) & a(1)
+	<- 	//operate
+
+        .println("AAAAAAAAAAAAAAAAAAAA");
+		?my_health(Health);
+		if (Health <= 0) {
+			?debug(Mode); if (Mode<=1) { .println("ESTOY MUERTO Y ME VOY AL ESTADO QUIT"); }
+			-+state(quit);
+			tasks([]);
+			.drop_all_intentions;
+			!!fsm;
+			.fail;
+		}
+
+		// the user can add or eliminate targets adding or removing tasks or changing priorities
+		!update_targets;
+
+		 // if there is no tasks to do, we start again the FSM
+        ?tasks(Tasks);
+		.length(Tasks, TaskListLength);
+		if (TaskListLength <= 0) {
+                        .my_name(Myn);
+                        //.println("No tengo tareas:",Myn );
+			!!fsm;
+			.fail;
+		}
+
+
+		// Obtain the task with the highest priority from Tasks list.
+		if(TaskListLength > 0){
+			.sort(Tasks, TasksSorted);
+			.max(TasksSorted, PrioritaryTask);
+
+
+			if (current_task(task(_,"TASK_WALKING_PATH",_,_,_))) {
+
+              if (.member(task(_, "TASK_WALKING_PATH", _, _, _), TasksSorted)) {
+
+				?task_priority("TASK_WALKING_PATH", WalkingPriority);
+				PrioritaryTask = task(Priority,_,_,_,_);
+
+				if (Priority > WalkingPriority) {
+
+					  .delete(task(_, "TASK_WALKING_PATH", _, _, _),TasksSorted,NewTaskList);
+		              -+tasks(NewTaskList);
+					}
+			  }
+			}
+
+			-+current_task(PrioritaryTask);
+			?tasks(Tasks2);
+			?debug(Mode); if (Mode<=2) { .println("LAS TAREAS SON ", Tasks2);
+                                         .println("LA TAREA PRIORITARIA AHORA ES ", PrioritaryTask); }
+			PrioritaryTask = task(_,_,_,CurrentDestination,_);
+
+			-+current_destination(CurrentDestination);
+			update_destination(CurrentDestination);
+
+			-+state(go_to_target);
+
+
+
+
+	    	}  else {
+
+			    ?debug(Mode); if (Mode<=1) { .println("No tengo tareas."); }
+			    ?current_destination(CurrentDestination);
+			    update_destination(CurrentDestination)
+			    }
+
+        .drop_desire(fsm);
+        !!fsm;
+        .fail.
+
++!fsm : state(go_to_target) & a(1)
+	<-
+		// Save the initial time for the first time.
+        .println("AAAAA");
+		if(not initialized_time) {
+			.time_in_millis(FirstCurrentTime);
+
+			+last_time_move(FirstCurrentTime);
+			+last_time_look(FirstCurrentTime);
+
+			+initialized_time;
+
+		}
+		// Need to look?
+		.time_in_millis(CurrentTime);
+		?last_time_look(LastTimeLook);
+		DiferentialLookTime = CurrentTime - LastTimeLook;
+
+		if (DiferentialLookTime > 500) {
+			-+last_time_look(CurrentTime);
+
+			// Look around.
+			!look;
+
+			!perform_look_action;
+
+			!get_agent_to_aim;
+
+
+			if ((aimed(Ag)) & (Ag=="true")) {
+				// Save current destination.
+				?current_destination(OldDestination);
+
+				!perform_aim_action;
+
+				?debug(Mode); if (Mode<=2) { .println("VOY A DISPARAR!!!"); }
+				// Shot.
+				!!shot(0);
+
+				// Continue to previous destination.
+
+				update_destination(pos(203,0,238));
+
+				-+last_time_move(CurrentTime);
+
+				// ya no tengo objetivo
+				-+aimed("false");
+
+			}; // End of if (aimed_agent)
+
+
+
+		}; // Endo of if (DiferentialTime > 500)
+
+		// Can I move?
+		?last_time_move(LastTimeMove);
+
+		DiferentialMoveTime = CurrentTime - LastTimeMove;
+
+		if (DiferentialMoveTime < 33) {
+           .wait(33);
+	       .drop_desire(fsm);
+			!!fsm;
+			.fail;
+ 		}
+
+		-+last_time_move(CurrentTime);
+
+        if (DiferentialMoveTime > 1000) {
+
+              move(1000);
+
+             } else  {
+
+                 move(DiferentialMoveTime);  }
+
+        if (path(X ,0, Z, AgAct, Pr)) {
+                 !add_task(task(Pr,"TASK_WALKING_PATH", AgAct, pos(X, 0, Z), ""));
+                 -path(_,_,_,_,_);
+               }
+
+           .drop_desire(fsm);
+
+		!!fsm;
+		.fail.
+
+
+
+
+
 +!get_agent_to_aim
 <-  ?debug(Mode); if (Mode<=2) { .println("Looking for agents to aim."); }
 ?fovObjects(FOVObjects);
@@ -64,10 +233,7 @@ if (Length > 0) {
         
         if (Type > 1000) {
             ?debug(Mode); if (Mode<=2) { .println("I found some object."); }
-        
-        } 
-        /*
-        else {
+        } else {
             // Object may be an enemy
             .nth(1, Object, Team);
             ?my_formattedTeam(MyTeam);
@@ -94,12 +260,12 @@ if (Length > 0) {
             }
             
         }
-        */
+        
         -+bucle(X+1);
         
     }
     
-   
+    
 }
 
 -bucle(_).
@@ -111,7 +277,7 @@ if (Length > 0) {
     <-  //-waiting_look_response;
         .length(FOVObjects, Length);
         if (Length > 0) {
-            ///?debug(Mode); if (Mode<=1) { .println("HAY ", Length, " OBJETOS A MI ALREDEDOR:\n", FOVObjects); }
+            ?debug(Mode); if (Mode<=1) { .println("HAY ", Length, " OBJETOS A MI ALREDEDOR:\n", FOVObjects); }
         };    
         -look_response(_)[source(M)];
         -+fovObjects(FOVObjects);
@@ -189,7 +355,8 @@ if (Length > 0) {
 /////////////////////////////////
 //  SETUP PRIORITIES
 /////////////////////////////////
-/**  You can change initial priorities if you want to change the behaviour of each agent  **/+!setup_priorities
+/**  You can change initial priorities if you want to change the behaviour of each agent  **/
++!setup_priorities
     <-  +task_priority("TASK_NONE",0);
         +task_priority("TASK_GIVE_MEDICPAKS", 2000);
         +task_priority("TASK_GIVE_AMMOPAKS", 0);
@@ -215,6 +382,7 @@ if (Length > 0) {
  * <em> It's very useful to overload this plan. </em>
  *
  */
+
 +!update_targets
 	<-	?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR UPDATE_TARGETS GOES HERE.") }.
 	
@@ -286,7 +454,7 @@ if (Length > 0) {
        ?my_health_threshold(Ht);
        ?my_health(Hr);
        
-       if (Hr <= Ht) {  
+       if (Hr <= Ht) { 
           ?my_position(X, Y, Z);
           
          .my_team("medic_ALLIED", E2);
@@ -301,6 +469,7 @@ if (Length > 0) {
 //  ANSWER_ACTION_CFM_OR_CFA
 /////////////////////////////////
 
+     
 
     
 +cfm_agree[source(M)]
@@ -320,10 +489,13 @@ if (Length > 0) {
       -cfa_refuse.  
 
 
+
 /////////////////////////////////
 //  Initialize variables
 /////////////////////////////////
 
 +!init
    <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE.")}.  
+
+
 

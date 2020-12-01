@@ -11,6 +11,7 @@ type("CLASS_SOLDIER").
 // Value of "closeness" to the Flag, when patrolling in defense
 patrollingRadius(64).
 
+a(0).
 
 
 

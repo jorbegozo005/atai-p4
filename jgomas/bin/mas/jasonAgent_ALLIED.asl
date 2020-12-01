@@ -9,9 +9,9 @@ team("ALLIED").
 type("CLASS_SOLDIER").
 
 
+//state(pos1).
 
-
-
+a(0).
 { include("jgomas.asl") }
 
 
@@ -65,6 +65,7 @@ if (Length > 0) {
         
         if (Type > 1000) {
             ?debug(Mode); if (Mode<=2) { .println("I found some object."); }
+        /*    
         } else {
             // Object may be an enemy
             .nth(1, Object, Team);
@@ -92,7 +93,7 @@ if (Length > 0) {
             }
             
         }
-        
+        */
         -+bucle(X+1);
         
     }

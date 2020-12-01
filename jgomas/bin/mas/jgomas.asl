@@ -719,8 +719,11 @@ current_task(nil).
     <-
          // Soy medico y me han pedido ayuda
         !checkMedicAction;
+		create_medic_pack;
+		//?position(P);
+		/*
         if (medicAction(on)) {
-        					!add_task(task("TASK_GIVE_MEDICPAKS", M, pos(X, Y, Z), ""));
+        					!add_task(task("TASK_GIVE_MEDICPAKS", M, _, ""));
     					   // .send(M, tell, "cfm_agree");
                                            .concat("cfm_agree", Content);
                                            .send_msg_with_conversation_id(M, tell, Content, "CFM");
@@ -733,7 +736,7 @@ current_task(nil).
          .send_msg_with_conversation_id(M, tell, Content, "CFM");
 
         }
-
+		*/
         -cfm(_)[source(M)].
 
 
