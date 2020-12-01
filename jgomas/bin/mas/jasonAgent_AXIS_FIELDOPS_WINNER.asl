@@ -51,6 +51,7 @@ patrollingRadius(64).
 		    +bucle(0);
     
             -+aimed("false");
+            -+aliado("false");
     
             while (aimed("false") & bucle(X) & (X < Length)) {
   
@@ -87,12 +88,19 @@ patrollingRadius(64).
 					    +aimed_agent(Object);
                         -+aimed("true");
 
+                    } else {
+                        -+aliado("true");
                     }
                     
                 }
              
                 -+bucle(X+1);
                 
+            }
+
+            if (aimed("true") & aliado("true")) {
+                -+aimed("false");
+                .println("Yo no disparo");
             }
 
             -flag_dissapeared;

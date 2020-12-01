@@ -90,14 +90,13 @@ patrollingRadius(64).
                 
             }
 
-            if (aliado("true")) {
-                .println("Hay aliado");
-            } else {
-                .println("No hay");
-            }
+        if (aimed("true") & aliado("true")) {
+            -+aimed("false");
+            .println("Yo no disparo");
+        }
                      
        
-        }
+    }
 
      -bucle(_).
 
