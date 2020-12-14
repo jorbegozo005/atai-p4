@@ -1,0 +1,79 @@
+Winner Team: ALLIED
+Duration: [4m:26s]
+
+Statistics for ALLIED TEAM
+	-GENERAL:
+		* Alive:       	7
+		* Avrg. Health:	69.42857
+
+	-OBJECTIVE:
+		* Times Taken: 	1
+		* Times Lost:  	0
+
+	-SHOTS:
+		* EnemyHit:    	88
+		* TeamHit:     	38
+		* FailedHit:   	64
+		* TOTAL:       	190
+
+	-MEDIC PACKS:
+		* Delivered:   	4
+		* Team Taken:  	2
+		* Enemy Taken: 	1
+		* Not Taken:   	1
+
+	-AMMO PACKS:
+		* Delivered:   	0
+		* Team Taken:  	0
+		* Enemy Taken: 	0
+		* Not Taken:   	0
+
+	-EFICIENCY:
+		* Medic:       	0.75
+		* FieldOps:    	0.0
+		* Army:        	0.9631578947368421
+
+	-ANTI-EFICIENCY:
+		* Medic:       	0.25
+		* FieldOps:    	0.0
+		* Army:        	0.18421052631578946
+
+
+Statistics for AXIS TEAM
+	-GENERAL:
+		* Alive:       	7
+		* Avrg. Health:	62.714287
+
+	-OBJECTIVE:
+		* Times Taken: 	0
+		* Times Lost:  	1
+
+	-SHOTS:
+		* EnemyHit:    	73
+		* TeamHit:     	32
+		* FailedHit:   	81
+		* TOTAL:       	186
+
+	-MEDIC PACKS:
+		* Delivered:   	0
+		* Team Taken:  	0
+		* Enemy Taken: 	0
+		* Not Taken:   	0
+
+	-AMMO PACKS:
+		* Delivered:   	0
+		* Team Taken:  	0
+		* Enemy Taken: 	0
+		* Not Taken:   	0
+
+	-EFICIENCY:
+		* Medic:       	0.0
+		* FieldOps:    	0.0
+		* Army:        	0.9623655913978495
+
+	-ANTI-EFICIENCY:
+		* Medic:       	0.0
+		* FieldOps:    	0.0
+		* Army:        	0.21875
+
+

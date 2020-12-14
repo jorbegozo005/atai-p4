@@ -6,10 +6,10 @@ manager("Manager").
 // Team of troop.
 team("AXIS").
 // Type of troop.
-type("CLASS_FIELDOPS").
+type("CLASS_MEDIC").
 
 // Value of "closeness" to the Flag, when patrolling in defense
-patrollingRadius(50).
+patrollingRadius(64).
 
 
 
@@ -63,17 +63,6 @@ patrollingRadius(50).
                 .nth(2, Object, Type);
                 
                 ?debug(Mode); if (Mode<=2) { .println("Objeto Analizado: ", Object); }
-
-                // Tracking the flag
-                if (Type == 1003){
-                    +flag_at_sight;
-                    .nth(6, Object, FlagPos);
-                    pos(FlagX, FlagY, FlagZ) = FlagPos;
-                    if (not flag_located){
-                        +flag_located;
-                        +flag(FlagX, FlagY, FlagZ);
-                    }
-                }
                 
                 if (Type > 1000) {
                     ?debug(Mode); if (Mode<=2) { .println("I found some object."); }
@@ -83,7 +72,7 @@ patrollingRadius(50).
                     ?my_formattedTeam(MyTeam);
           
                     if (Team == 100) {  // Only if I'm AXIS
-
+				
  					    ?debug(Mode); if (Mode<=2) { .println("Aiming an enemy. . .", MyTeam, " ", .number(MyTeam) , " ", Team, " ", .number(Team)); }
 					    +aimed_agent(Object);
                         -+aimed("true");
@@ -102,56 +91,10 @@ patrollingRadius(50).
                 -+aimed("false");
                 .println("Yo no disparo");
             }
-
-            -flag_dissapeared;
-
-            if (flag_previously_at_sight & not flag_at_sight){
-                .println("I lost sight of the flag");
-                +flag_dissapeared;
-            }
-
-            -flag_previously_at_sight;
-
-            if (flag_at_sight){
-                +flag_previously_at_sight;
-                -flag_at_sight;
-            }
-                    
-         
+                     
         }
 
-     -bucle(_);
-    
-    //We look for enemies in the position where the flag was
-    if (flag_dissapeared){
-        //If there are objects in sight we iterate through them
-        if (Length > 0) {
-		    +bucle(0);
-            while (bucle(X) & (X < Length)) {
-                //Check if the object is an enemy
-                .nth(X, FOVObjects, Object);
-                .nth(2, Object, Type);
-                if (Type < 1000){
-                    .nth(1, Object, Team);
-                    if (Team == 100){
-                        //Check if the enenemie is the position where the flag was
-                        .nth(6, Object, EnemiePos);
-                        pos(EposX, EposY, EposZ) = EnemiePos;
-                        ?flag(FlagX, FlagY, FlagZ);
-                        if (math.abs(EposX - FlagX)<3 & math.abs(EposY - FlagY)<3 & math.abs(EposZ - FlagZ)<3){
-                            .println("AAAAAAAAAAAAA THE FLAGGGG WAS TAKEEEEEEN");
-                            .println("By someone at: ", EposX, ", ", EposY, ", ", EposZ);
-                            -flag_located;
-                            -flag(_);
-                        }
-                    }
-                }
-                -+bucle(X+1);
-            }
-            -bucle(_);
-        }
-    }
-    .
+     -bucle(_).
 
         
 
@@ -243,8 +186,8 @@ patrollingRadius(50).
 /**  You can change initial priorities if you want to change the behaviour of each agent  **/
 +!setup_priorities
     <-  +task_priority("TASK_NONE",0);
-        +task_priority("TASK_GIVE_MEDICPAKS", 0);
-        +task_priority("TASK_GIVE_AMMOPAKS", 2000);
+        +task_priority("TASK_GIVE_MEDICPAKS", 2000);
+        +task_priority("TASK_GIVE_AMMOPAKS", 0);
         +task_priority("TASK_GIVE_BACKUP", 0);
         +task_priority("TASK_GET_OBJECTIVE",1000);
         +task_priority("TASK_ATTACK", 1000);
@@ -348,7 +291,7 @@ patrollingRadius(50).
 
        }
        .
-
+       
 /////////////////////////////////
 //  ANSWER_ACTION_CFM_OR_CFA
 /////////////////////////////////
@@ -372,12 +315,11 @@ patrollingRadius(50).
       -cfa_refuse.  
 
 
+
 /////////////////////////////////
 //  Initialize variables
 /////////////////////////////////
 
 +!init
-   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE.")}
-        
-    
-    .
+   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE.")}.  
+

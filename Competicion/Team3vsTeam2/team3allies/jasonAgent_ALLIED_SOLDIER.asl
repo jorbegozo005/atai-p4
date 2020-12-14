@@ -4,17 +4,17 @@ debug(3).
 manager("Manager").
 
 // Team of troop.
-team("AXIS").
+team("ALLIED").
 // Type of troop.
-type("CLASS_FIELDOPS").
-
-// Value of "closeness" to the Flag, when patrolling in defense
-patrollingRadius(50).
+type("CLASS_SOLDIER").
 
 
 
 
-{ include("jgomas.asl") }
+
+{ include("../jgomas.asl") }
+
+
 
 
 // Plans
@@ -30,16 +30,16 @@ patrollingRadius(50).
 //  GET AGENT TO AIM 
 /////////////////////////////////  
 /**
- * Calculates if there is an enemy at sight.
- *
- * This plan scans the list <tt> m_FOVObjects</tt> (objects in the Field
- * Of View of the agent) looking for an enemy. If an enemy agent is found, a
- * value of aimed("true") is returned. Note that there is no criterion (proximity, etc.) for the
- * enemy found. Otherwise, the return value is aimed("false")
- *
- * <em> It's very useful to overload this plan. </em>
- *
- */
+* Calculates if there is an enemy at sight.
+* 
+* This plan scans the list <tt> m_FOVObjects</tt> (objects in the Field
+* Of View of the agent) looking for an enemy. If an enemy agent is found, a
+* value of aimed("true") is returned. Note that there is no criterion (proximity, etc.) for the
+* enemy found. Otherwise, the return value is aimed("false")
+* 
+* <em> It's very useful to overload this plan. </em>
+* 
+*/  
 +!get_agent_to_aim
     <-  ?debug(Mode); if (Mode<=2) { .println("Looking for agents to aim."); }
         ?fovObjects(FOVObjects);
@@ -50,10 +50,12 @@ patrollingRadius(50).
         if (Length > 0) {
 		    +bucle(0);
     
-            -+aimed("false");
-            -+aliado("false");
+            -+youCanShoot("false");
+            -+found_enemy("false");
+            -+found_allied("false");
+            
     
-            while (aimed("false") & bucle(X) & (X < Length)) {
+            while (bucle(X) & (X < Length)) {
   
                 //.println("En el bucle, y X vale:", X);
                 
@@ -63,17 +65,6 @@ patrollingRadius(50).
                 .nth(2, Object, Type);
                 
                 ?debug(Mode); if (Mode<=2) { .println("Objeto Analizado: ", Object); }
-
-                // Tracking the flag
-                if (Type == 1003){
-                    +flag_at_sight;
-                    .nth(6, Object, FlagPos);
-                    pos(FlagX, FlagY, FlagZ) = FlagPos;
-                    if (not flag_located){
-                        +flag_located;
-                        +flag(FlagX, FlagY, FlagZ);
-                    }
-                }
                 
                 if (Type > 1000) {
                     ?debug(Mode); if (Mode<=2) { .println("I found some object."); }
@@ -82,14 +73,13 @@ patrollingRadius(50).
                     .nth(1, Object, Team);
                     ?my_formattedTeam(MyTeam);
           
-                    if (Team == 100) {  // Only if I'm AXIS
-
- 					    ?debug(Mode); if (Mode<=2) { .println("Aiming an enemy. . .", MyTeam, " ", .number(MyTeam) , " ", Team, " ", .number(Team)); }
-					    +aimed_agent(Object);
-                        -+aimed("true");
-
-                    } else {
-                        -+aliado("true");
+                    if (Team == 200) {  // Only if I'm AXIS
+                        -+found_enemy("true");
+                        -+found_enemy_obj(Object);
+                    }
+                    if(Team == 100){
+                        -+found_allied("true");
+                        -+found_allied_obj(Object);
                     }
                     
                 }
@@ -97,63 +87,31 @@ patrollingRadius(50).
                 -+bucle(X+1);
                 
             }
-
-            if (aimed("true") & aliado("true")) {
-                -+aimed("false");
-                .println("Yo no disparo");
-            }
-
-            -flag_dissapeared;
-
-            if (flag_previously_at_sight & not flag_at_sight){
-                .println("I lost sight of the flag");
-                +flag_dissapeared;
-            }
-
-            -flag_previously_at_sight;
-
-            if (flag_at_sight){
-                +flag_previously_at_sight;
-                -flag_at_sight;
-            }
-                    
-         
-        }
-
-     -bucle(_);
-    
-    //We look for enemies in the position where the flag was
-    if (flag_dissapeared){
-        //If there are objects in sight we iterate through them
-        if (Length > 0) {
-		    +bucle(0);
-            while (bucle(X) & (X < Length)) {
-                //Check if the object is an enemy
-                .nth(X, FOVObjects, Object);
-                .nth(2, Object, Type);
-                if (Type < 1000){
-                    .nth(1, Object, Team);
-                    if (Team == 100){
-                        //Check if the enenemie is the position where the flag was
-                        .nth(6, Object, EnemiePos);
-                        pos(EposX, EposY, EposZ) = EnemiePos;
-                        ?flag(FlagX, FlagY, FlagZ);
-                        if (math.abs(EposX - FlagX)<3 & math.abs(EposY - FlagY)<3 & math.abs(EposZ - FlagZ)<3){
-                            .println("AAAAAAAAAAAAA THE FLAGGGG WAS TAKEEEEEEN");
-                            .println("By someone at: ", EposX, ", ", EposY, ", ", EposZ);
-                            -flag_located;
-                            -flag(_);
-                        }
+            if(found_enemy("true")){
+                ?found_enemy_obj(EnemyObj);
+                .nth(4, EnemyObj, DistToEnemy);
+                if(found_allied("true")){
+                    ?found_allied_obj(AlliedObj);
+                    .nth(4, AlliedObj, DistToAlly);
+                    if(DistToAlly>DistToEnemy){
+                        -+youCanShoot("true");
+                    }
+                    else{
+                        -+youCanShoot("false");
                     }
                 }
-                -+bucle(X+1);
+                else{
+                    -+youCanShoot("true");
+                }
+                if(youCanShoot("true")){
+                    +aimed_agent(EnemyObj);
+                }
             }
-            -bucle(_);
+                     
+       
         }
-    }
-    .
 
-        
+     -bucle(_).
 
 /////////////////////////////////
 //  LOOK RESPONSE
@@ -162,7 +120,7 @@ patrollingRadius(50).
     <-  //-waiting_look_response;
         .length(FOVObjects, Length);
         if (Length > 0) {
-            ///?debug(Mode); if (Mode<=1) { .println("HAY ", Length, " OBJETOS A MI ALREDEDOR:\n", FOVObjects); }
+            ?debug(Mode); if (Mode<=1) { .println("HAY ", Length, " OBJETOS A MI ALREDEDOR:\n", FOVObjects); }
         };    
         -look_response(_)[source(M)];
         -+fovObjects(FOVObjects);
@@ -174,68 +132,68 @@ patrollingRadius(50).
 //  PERFORM ACTIONS
 /////////////////////////////////
 /**
- * Action to do when agent has an enemy at sight.
- *
- * This plan is called when agent has looked and has found an enemy,
- * calculating (in agreement to the enemy position) the new direction where
- * is aiming.
- *
- *  It's very useful to overload this plan.
- *
- */
+* Action to do when agent has an enemy at sight.
+* 
+* This plan is called when agent has looked and has found an enemy,
+* calculating (in agreement to the enemy position) the new direction where
+* is aiming.
+*
+*  It's very useful to overload this plan.
+* 
+*/
 +!perform_aim_action
     <-  // Aimed agents have the following format:
         // [#, TEAM, TYPE, ANGLE, DISTANCE, HEALTH, POSITION ]
         ?aimed_agent(AimedAgent);
         ?debug(Mode); if (Mode<=1) { .println("AimedAgent ", AimedAgent); }
         .nth(1, AimedAgent, AimedAgentTeam);
-        ?debug(Mode); if (Mode<=2) { .println("BAJO EL PUNTO DE MIRA TENGO A ALGUIEN DEL EQUIPO ", AimedAgentTeam); }
+        ?debug(Mode); if (Mode<=2) { .println("BAJO EL PUNTO DE MIRA TENGO A ALGUIEN DEL EQUIPO ", AimedAgentTeam);             }
         ?my_formattedTeam(MyTeam);
 
 
-        if (AimedAgentTeam == 100) {
-        
-            .nth(6, AimedAgent, NewDestination);
-            ?debug(Mode); if (Mode<=1) { .println("NUEVO DESTINO MARCADO: ", NewDestination); }
-            //update_destination(NewDestination);
-        }
-        .
+        if (AimedAgentTeam == 200) {
+    
+                .nth(6, AimedAgent, NewDestination);
+                ?debug(Mode); if (Mode<=1) { .println("NUEVO DESTINO DEBERIA SER: ", NewDestination); }
+          
+            }
+ .
+
+/**
+* Action to do when the agent is looking at.
+*
+* This plan is called just after Look method has ended.
+* 
+* <em> It's very useful to overload this plan. </em>
+* 
+*/
++!perform_look_action .
+   /// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_LOOK_ACTION GOES HERE.") }. 
+
+/**
+* Action to do if this agent cannot shoot.
+* 
+* This plan is called when the agent try to shoot, but has no ammo. The
+* agent will spit enemies out. :-)
+* 
+* <em> It's very useful to overload this plan. </em>
+* 
+*/  
++!perform_no_ammo_action . 
+   /// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_NO_AMMO_ACTION GOES HERE.") }.
     
 /**
- * Action to do when the agent is looking at.
- *
- * This plan is called just after Look method has ended.
- *
- * <em> It's very useful to overload this plan. </em>
- *
- */
-+!perform_look_action .
-/// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_LOOK_ACTION GOES HERE.") }.
-
-/**
- * Action to do if this agent cannot shoot.
- *
- * This plan is called when the agent try to shoot, but has no ammo. The
- * agent will spit enemies out. :-)
- *
- * <em> It's very useful to overload this plan. </em>
- *
- */
-+!perform_no_ammo_action .
-/// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_NO_AMMO_ACTION GOES HERE.") }.
-
-/**
- * Action to do when an agent is being shot.
- *
- * This plan is called every time this agent receives a messager from
- * agent Manager informing it is being shot.
- *
- * <em> It's very useful to overload this plan. </em>
- *
- */
+     * Action to do when an agent is being shot.
+     * 
+     * This plan is called every time this agent receives a messager from
+     * agent Manager informing it is being shot.
+     * 
+     * <em> It's very useful to overload this plan. </em>
+     * 
+     */
 +!perform_injury_action .
-///<- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_INJURY_ACTION GOES HERE.") }.
-
+    ///<- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_INJURY_ACTION GOES HERE.") }. 
+        
 
 /////////////////////////////////
 //  SETUP PRIORITIES
@@ -243,15 +201,15 @@ patrollingRadius(50).
 /**  You can change initial priorities if you want to change the behaviour of each agent  **/
 +!setup_priorities
     <-  +task_priority("TASK_NONE",0);
-        +task_priority("TASK_GIVE_MEDICPAKS", 0);
-        +task_priority("TASK_GIVE_AMMOPAKS", 2000);
+        +task_priority("TASK_GIVE_MEDICPAKS", 2000);
+        +task_priority("TASK_GIVE_AMMOPAKS", 0);
         +task_priority("TASK_GIVE_BACKUP", 0);
         +task_priority("TASK_GET_OBJECTIVE",1000);
         +task_priority("TASK_ATTACK", 1000);
         +task_priority("TASK_RUN_AWAY", 1500);
         +task_priority("TASK_GOTO_POSITION", 750);
         +task_priority("TASK_PATROLLING", 500);
-        +task_priority("TASK_WALKING_PATH", 750).   
+        +task_priority("TASK_WALKING_PATH", 1750).   
 
 
 
@@ -267,8 +225,10 @@ patrollingRadius(50).
  * <em> It's very useful to overload this plan. </em>
  *
  */
-+!update_targets 
+
++!update_targets
 	<-	?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR UPDATE_TARGETS GOES HERE.") }.
+	
 	
 	
 /////////////////////////////////
@@ -282,11 +242,11 @@ patrollingRadius(50).
  * <em> It's very useful to overload this plan. </em>
  *
  */
-+!checkMedicAction
-<-  -+medicAction(on).
-// go to help
-
-
+ +!checkMedicAction
+     <-  -+medicAction(on).
+      // go to help
+      
+      
 /////////////////////////////////
 //  CHECK FIELDOPS ACTION (ONLY FIELDOPS)
 /////////////////////////////////
@@ -298,10 +258,9 @@ patrollingRadius(50).
  * <em> It's very useful to overload this plan. </em>
  *
  */
-+!checkAmmoAction
-<-  -+fieldopsAction(on).
-//  go to help
-
+ +!checkAmmoAction
+     <-  -+fieldopsAction(on).
+      //  go to help
 
 
 
@@ -327,7 +286,7 @@ patrollingRadius(50).
        if (Ar <= At) { 
           ?my_position(X, Y, Z);
           
-         .my_team("fieldops_AXIS", E1);
+         .my_team("fieldops_ALLIED", E1);
          //.println("Mi equipo intendencia: ", E1 );
          .concat("cfa(",X, ", ", Y, ", ", Z, ", ", Ar, ")", Content1);
          .send_msg_with_conversation_id(E1, tell, Content1, "CFA");
@@ -341,18 +300,19 @@ patrollingRadius(50).
        if (Hr <= Ht) { 
           ?my_position(X, Y, Z);
           
-         .my_team("medic_AXIS", E2);
+         .my_team("medic_ALLIED", E2);
          //.println("Mi equipo medico: ", E2 );
          .concat("cfm(",X, ", ", Y, ", ", Z, ", ", Hr, ")", Content2);
          .send_msg_with_conversation_id(E2, tell, Content2, "CFM");
 
        }
        .
-
+       
 /////////////////////////////////
 //  ANSWER_ACTION_CFM_OR_CFA
 /////////////////////////////////
 
+     
 
     
 +cfm_agree[source(M)]
@@ -372,12 +332,10 @@ patrollingRadius(50).
       -cfa_refuse.  
 
 
+
 /////////////////////////////////
 //  Initialize variables
 /////////////////////////////////
 
 +!init
-   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE.")}
-        
-    
-    .
+   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE.")}.  
